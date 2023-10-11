@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "sahi-tracking"
+version = "0.1.0"
+description = ""
+authors = ["jokober <glpat-xy-QA7sDBF1125TDuaBe>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+sahi = "^0.11.14"
+pytest = "^7.4.2"
+torch = "==2.0.0" # limited because of this issue https://github.com/pytorch/pytorch/issues/100974
+ultralytics = "^8"
+Pillow = "^10.0.0"
+numpy = "1.23.5" # limited because of ByteTrack https://github.com/ifzhang/ByteTrack/issues/330
+scikit-image = "^0.21.0"
+cython = "^3.0.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

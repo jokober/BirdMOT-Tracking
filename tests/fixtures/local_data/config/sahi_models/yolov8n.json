@@ -1,0 +1,10 @@
+{
+    "model_type": "yolov8",
+    "model_path": "",
+    "model_device": "cpu",
+    "model_confidence_threshold": 0.4,
+    "slice_height": 256,
+    "slice_width": 256,
+    "overlap_height_ratio": 0.2,
+    "overlap_width_ratio": 0.2
+}
