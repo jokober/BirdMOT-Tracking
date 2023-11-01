@@ -6,7 +6,7 @@ authors = ["jokober <glpat-xy-QA7sDBF1125TDuaBe>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python =  ">3.9.7, <3.10" # limitation because of streamlit streamlit
 sahi = "^0.11.14"
 pytest = "^7.4.2"
 torch = "==2.0.0" # limited because of this issue https://github.com/pytorch/pytorch/issues/100974
@@ -15,6 +15,13 @@ Pillow = "^10.0.0"
 numpy = "1.23.5" # limited because of ByteTrack https://github.com/ifzhang/ByteTrack/issues/330
 scikit-image = "^0.21.0"
 cython = "^3.0.2"
+norfair = "^2.2.0"
+trackeval = { git = "https://github.com/JonathonLuiten/TrackEval"}
+oc_sort = { git = "https://github.com/noahcao/OC_SORT"}
+sort-tracker = '>1.0.0'
+deepdiff = "^6.6.0"
+pycocotools = "^2.0.7"
+tabulate = "^0.9.0"
 
 [build-system]
 requires = ["poetry-core"]

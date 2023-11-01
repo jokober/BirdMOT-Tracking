@@ -1,0 +1,11 @@
+{
+    "tracking_datasets": [
+        {
+            "cocovid_path": "C0054_783015_783046_scalabel_converted_coco_format_track_box.json",
+            "filter_sequences": []
+        }
+
+    ],
+    "benchmark_name": "BirdMOT"
+
+}
