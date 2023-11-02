@@ -12,6 +12,19 @@
           "inertia": 0.001,
           "use_byte": true
       }
+    },
+                {
+        "tracker_type": "oc_sort",
+        "tracker_config": {
+          "det_thresh": 0.02,
+          "max_age": 60,
+          "min_hits": 3,
+          "iou_threshold": 0.00000001,
+          "delta_t": 2,
+          "asso_func": "ciou",
+          "inertia": 0.001,
+          "use_byte": true
+      }
     }
   ]
 }

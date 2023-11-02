@@ -1,4 +1,5 @@
 import json
+import shutil
 from copy import deepcopy
 from pathlib import Path
 
@@ -33,6 +34,9 @@ def find_or_create_dataset(dataset_config: dict, persistence_state: DataStatePer
     # Check if dataset already exists return it if so or create otherwise
     if not persistence_state.data_exists('datasets', dataset_hash):
         dataset_path = get_datasets_path() / dataset_hash
+        if dataset_path.exists():
+            shutil.rmtree(dataset_path)
+            print("Dataset already exists. Deleting it and creating a new one.")
         dataset_path.mkdir(exist_ok=True)
 
         dataset['dataset']['dataset_path'] = dataset_path

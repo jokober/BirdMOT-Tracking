@@ -22,6 +22,29 @@
           "reid_distance_threshold": 0,
           "reid_hit_counter_max": null
       }
+    },
+        {
+        "tracker_type": "noirfair",
+        "tracker_config": {
+          "distance_function": "euclidean",
+          "distance_threshold": 1000,
+          "hit_counter_max": 14,
+          "initialization_delay": null,
+          "pointwise_hit_counter_max": 4,
+          "detection_threshold": 0.02,
+          "filter_factory": {
+            "filter_factory": "OptimizedKalmanFilterFactory",
+            "R": 4.0,
+            "Q": 0.1,
+            "pos_variance": 10,
+            "pos_vel_covariance": 0,
+            "vel_variance": 1
+          },
+          "past_detections_length": 4,
+          "reid_distance_function": null,
+          "reid_distance_threshold": 0,
+          "reid_hit_counter_max": null
+      }
     }
   ]
 }

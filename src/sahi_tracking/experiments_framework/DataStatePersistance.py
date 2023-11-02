@@ -35,6 +35,7 @@ class DataStatePersistance:
             'predictions_results': [],
             'evaluation_results': [],
         }
+        self.write_state()
 
     def delete_existing(self, key, hash):
         self.load_state()
@@ -59,5 +60,6 @@ class DataStatePersistance:
         return [item for item in self.state[key] if item["hash"] == hash][0]
 
     def data_exists(self, key, hash):
+        self.load_state()
         return hash in [item["hash"] for item in self.state[key]]
 

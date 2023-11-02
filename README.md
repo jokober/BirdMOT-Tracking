@@ -36,3 +36,9 @@ poetry install
                 "ciou": ciou_batch,
                 "diou": diou_batch,
                 "ct_dist": ct_dist}
+
+## ByteTrack
+frame_rate
+track_thresh
+track_buffer
+match_thresh # Used for high score detection

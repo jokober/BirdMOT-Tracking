@@ -7,8 +7,9 @@ from deepdiff import DeepHash
 from src.sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
 from src.sahi_tracking.formats.mot_format import create_mot_folder_structure
 from src.sahi_tracking.helper.config import get_predictions_path, get_tracking_results_path
+from src.sahi_tracking.trackers.ByteTrack import ByteTrack
 from src.sahi_tracking.trackers.norfair_tracker import NorfairTracker
-from src.sahi_tracking.trackers.oc_sort_tracker import OC_Sort_Tracker
+from src.sahi_tracking.trackers.ocsorttracker import OcSortTracker
 
 
 def find_or_create_tracking_results(tracking_experiment: dict, predictions_result: dict, dataset: dict, persistence_state: DataStatePersistance, overwrite_existing: bool = False):
@@ -47,7 +48,9 @@ def find_or_create_tracking_results(tracking_experiment: dict, predictions_resul
             if tracking_experiment['tracker_type'] == 'noirfair':
                 tracker = NorfairTracker(accumulate_results=True, **tracking_experiment['tracker_config'])
             elif tracking_experiment['tracker_type'] == 'oc_sort':
-                tracker = OC_Sort_Tracker(accumulate_results=True, **tracking_experiment['tracker_config'])
+                tracker = OcSortTracker(accumulate_results=True, **tracking_experiment['tracker_config'])
+            elif tracking_experiment['tracker_type'] == 'bytetrack':
+                tracker = ByteTrack(accumulate_results=True, **tracking_experiment['tracker_config'])
             else:
                 raise NotImplementedError("The tracker_type is not implemented.")
 

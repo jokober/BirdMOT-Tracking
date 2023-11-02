@@ -1,0 +1,22 @@
+{
+  "tracker_experiments": [
+    {
+        "tracker_type": "bytetrack",
+        "tracker_config": {
+          "frame_rate": 30,
+          "track_thresh": 0.2,
+          "track_buffer": 15,
+          "match_thresh": 0.5
+      }
+    },
+    {
+        "tracker_type": "bytetrack",
+        "tracker_config": {
+          "frame_rate": 30,
+          "track_thresh": 0.2,
+          "track_buffer": 14,
+          "match_thresh": 0.5
+      }
+    }
+  ]
+}
