@@ -1,6 +1,6 @@
-from src.sahi_tracking.experiments_framework.dataset_creation import find_or_create_dataset
-from src.sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
-from src.sahi_tracking.helper.config import get_datasets_path
+from sahi_tracking.experiments_framework.dataset_creation import find_or_create_dataset
+from sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
+from sahi_tracking.helper.config import get_datasets_path
 from tests.fixtures.fixtures import dataset_config_dict_fixture, cocovid_images_fixture_dir
 
 

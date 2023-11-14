@@ -5,10 +5,10 @@ from pathlib import Path
 from deepdiff import DeepHash
 from sahi.predict import predict
 
-from src.sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
-from src.sahi_tracking.formats.mot_format import create_mot_folder_structure, \
+from sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
+from sahi_tracking.formats.mot_format import create_mot_folder_structure, \
     mot_matrix_from_sahi_object_prediction_list
-from src.sahi_tracking.helper.config import get_predictions_path
+from sahi_tracking.helper.config import get_predictions_path
 
 
 def find_or_create_predictions(dataset: dict, prediction_params: dict, model_path: Path, persistence_state: DataStatePersistance, device = 'cpu', cocovid_img_path: Path = None, overwrite_existing: bool = False):
@@ -67,7 +67,7 @@ def find_or_create_predictions(dataset: dict, prediction_params: dict, model_pat
             # Create MOT format
             mot_matrix_from_sahi_object_prediction_list(seq_res['seq_name'], seq_res['frame_predictions'], prediction_results_path / f"{sequence['name']}/MOT/det")
 
-        predictions_results['dir'] = predict_return_dict['export_dir']
+        predictions_results['dir'] = predict_return_dict['export_dir'].parent
         predictions_results['hash'] = predictions_results_hash
 
         # Add new predictions to state

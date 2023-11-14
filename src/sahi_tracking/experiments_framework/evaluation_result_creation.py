@@ -4,11 +4,11 @@ from pathlib import Path
 import numpy as np
 from deepdiff import DeepHash
 
-from src.sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
-from src.sahi_tracking.formats.mot_format import create_mot_folder_structure
-from src.sahi_tracking.helper.config import get_predictions_path, get_tracking_results_path, get_evaluation_results_path
-from src.sahi_tracking.trackers.norfair_tracker import NorfairTracker
-from src.sahi_tracking.trackeval_evaluation import trackeval_evaluate
+from sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
+from sahi_tracking.formats.mot_format import create_mot_folder_structure
+from sahi_tracking.helper.config import get_predictions_path, get_tracking_results_path, get_evaluation_results_path
+from sahi_tracking.trackers.norfair_tracker import NorfairTracker
+from sahi_tracking.trackeval_evaluation import trackeval_evaluate
 
 
 
@@ -22,12 +22,15 @@ def find_or_create_tracker_evaluations(tracking_results: dict, predictions_resul
         'predictions_hash': predictions_result['hash'],
         'tracking_results_hash': tracking_experiment['hash'],
         'evaluation_results': None,
+        'path': None,
+        'tracker_name': tracking_experiment['name'],
         'hash': None
     }
 
     # Create hash of the tracking results
     deephash_exclude_paths = [
         "root['evaluation_results']",
+        "root['path']",
         "root['hash']",
     ]
     evaluation_results_hash = DeepHash(evaluation_results, exclude_paths=deephash_exclude_paths)[evaluation_results]
@@ -50,6 +53,7 @@ def find_or_create_tracker_evaluations(tracking_results: dict, predictions_resul
             SPLIT_TO_EVAL="all"
             )
 
+        evaluation_results['path'] = evaluation_results_path
         evaluation_results['hash'] = evaluation_results_hash
         persistence_state.update_state('append', 'evaluation_results', evaluation_results)
     else:

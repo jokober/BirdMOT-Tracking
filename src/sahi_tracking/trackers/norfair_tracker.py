@@ -19,6 +19,8 @@ class NorfairTracker:
         self.matrix_predictions = np.empty((0,10), dtype=float)
         self.frame_number = 0
 
+        self.name = self.create_tracker_name(distance_function)
+
     def offline_tracking(self, object_prediction_list: PredictionResult):
         raise NotImplementedError("The offline tracking is not implemented.")
 
@@ -73,3 +75,6 @@ class NorfairTracker:
     def get_mot_list(self):
         shape = self.matrix_predictions.shape
         return self.matrix_predictions
+
+    def create_tracker_name(self, distance_function):
+        return f"Norfair ({distance_function})"

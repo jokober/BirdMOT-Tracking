@@ -3,12 +3,15 @@ from pathlib import Path
 
 import pytest
 
+class ValueStorage:
+    state_persistance = None
 
 @pytest.fixture(scope='session')
 def local_data_path_fixture(tmp_path_factory):
     fn = tmp_path_factory.mktemp('local_data')
     shutil.copytree((Path(__file__).parents[0] / 'fixtures' / "local_data"), Path(fn), dirs_exist_ok=True)
     return fn
+
 
 
 @pytest.fixture(autouse=True)

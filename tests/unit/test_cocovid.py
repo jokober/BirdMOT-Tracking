@@ -1,4 +1,4 @@
-from src.sahi_tracking.formats.cocovid import filter_sequences
+from sahi_tracking.formats.cocovid import filter_sequences
 from tests.fixtures.fixtures import primary_sequence_dict_fixture
 
 

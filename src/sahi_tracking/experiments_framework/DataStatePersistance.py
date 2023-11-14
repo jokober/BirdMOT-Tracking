@@ -2,13 +2,14 @@ import pickle
 from argparse import ArgumentParser
 from pathlib import Path
 
-from src.sahi_tracking.experiments_framework.utils import load_config_files
-from src.sahi_tracking.helper.config import get_local_data_path
+from sahi_tracking.experiments_framework.utils import load_config_files
+
+from sahi_tracking.helper.config import get_local_data_path
 
 
 class DataStatePersistance:
     def __init__(self):
-        self.local_data_path = get_local_data_path()
+        self.local_data_path =  get_local_data_path()
         self.state_path: Path = self.local_data_path / 'state.pkl'
 
         self.state = None

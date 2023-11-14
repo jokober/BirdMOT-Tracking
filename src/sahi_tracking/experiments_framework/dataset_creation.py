@@ -5,11 +5,13 @@ from pathlib import Path
 
 from deepdiff import DeepHash
 
-from src.sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
-from src.sahi_tracking.formats.cocovid import filter_sequences
 
-from src.sahi_tracking.formats.cocovid2mot import cocovid2mot
-from src.sahi_tracking.helper.config import get_datasets_path, get_coco_files_path
+from sahi_tracking.formats.cocovid import filter_sequences
+
+from sahi_tracking.formats.cocovid2mot import cocovid2mot
+from sahi_tracking.helper.config import get_datasets_path, get_coco_files_path
+
+from sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
 
 
 def find_or_create_dataset(dataset_config: dict, persistence_state: DataStatePersistance, cocovid_img_path: Path = None, overwrite_existing: bool = False):

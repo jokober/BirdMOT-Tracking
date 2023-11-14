@@ -70,7 +70,6 @@ def trackeval_evaluate(GT_FOLDER, TRACKERS_FOLDER, OUTPUT_FOLDER, SEQMAP_FILE, B
     #config = {**default_eval_config, **default_dataset_config, **default_metrics_config}  # Merge default configs
 
 
-    # Run code
     evaluator = trackeval.Evaluator(eval_config)
     dataset_list = [trackeval.datasets.MotChallenge2DBox(dataset_config)]
     metrics_list = []

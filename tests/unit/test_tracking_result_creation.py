@@ -1,10 +1,10 @@
 from copy import deepcopy
 
-from src.sahi_tracking.experiments_framework.dataset_creation import find_or_create_dataset
-from src.sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
-from src.sahi_tracking.experiments_framework.predictions_creation import find_or_create_predictions
-from src.sahi_tracking.experiments_framework.tracking_result_creation import find_or_create_tracking_results
-from src.sahi_tracking.helper.config import get_datasets_path
+from sahi_tracking.experiments_framework.dataset_creation import find_or_create_dataset
+from sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
+from sahi_tracking.experiments_framework.predictions_creation import find_or_create_predictions
+from sahi_tracking.experiments_framework.tracking_result_creation import find_or_create_tracking_results
+from sahi_tracking.helper.config import get_datasets_path
 from tests.fixtures.fixtures import dataset_config_dict_fixture, cocovid_images_fixture_dir, \
     sahi_prediction_params_dict_fixture, sahi_test_model_path, tracking_experiments_dict_fixture
 
