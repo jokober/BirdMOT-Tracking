@@ -1,15 +1,10 @@
 from copy import deepcopy
-from pathlib import Path
 
-import numpy as np
 from deepdiff import DeepHash
 
 from sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
-from sahi_tracking.formats.mot_format import create_mot_folder_structure
-from sahi_tracking.helper.config import get_predictions_path, get_tracking_results_path, get_evaluation_results_path
-from sahi_tracking.trackers.norfair_tracker import NorfairTracker
-from sahi_tracking.trackeval_evaluation import trackeval_evaluate
-
+from sahi_tracking.helper.config import get_evaluation_results_path
+from sahi_tracking.evaluation.trackeval_evaluation import trackeval_evaluate, load_trackeval_evaluation_data
 
 
 def find_or_create_tracker_evaluations(tracking_results: dict, predictions_result: dict, dataset: dict,
@@ -22,6 +17,7 @@ def find_or_create_tracker_evaluations(tracking_results: dict, predictions_resul
         'predictions_hash': predictions_result['hash'],
         'tracking_results_hash': tracking_experiment['hash'],
         'evaluation_results': None,
+        'evaluation_results_summary': None,
         'path': None,
         'tracker_name': tracking_experiment['name'],
         'hash': None
@@ -30,6 +26,7 @@ def find_or_create_tracker_evaluations(tracking_results: dict, predictions_resul
     # Create hash of the tracking results
     deephash_exclude_paths = [
         "root['evaluation_results']",
+        "root['evaluation_results_summary']",
         "root['path']",
         "root['hash']",
     ]
@@ -37,7 +34,7 @@ def find_or_create_tracker_evaluations(tracking_results: dict, predictions_resul
 
     # Delete existing predictions if overwrite_existing is True
     if overwrite_existing:
-        persistence_state.delete_existing('evaluation_results', evaluation_results_hash)
+        persistence_state.delete_existing_by_hash('evaluation_results', evaluation_results_hash)
 
     # Check if tracking results already exist. Return it or create otherwise.
     if not persistence_state.data_exists('evaluation_results', evaluation_results_hash):
@@ -55,6 +52,7 @@ def find_or_create_tracker_evaluations(tracking_results: dict, predictions_resul
 
         evaluation_results['path'] = evaluation_results_path
         evaluation_results['hash'] = evaluation_results_hash
+        evaluation_results['evaluation_results_summary'] = load_trackeval_evaluation_data([evaluation_results], "pedestrian")[evaluation_results_hash]
         persistence_state.update_state('append', 'evaluation_results', evaluation_results)
     else:
         evaluation_results = persistence_state.load_data('evaluation_results', evaluation_results_hash)

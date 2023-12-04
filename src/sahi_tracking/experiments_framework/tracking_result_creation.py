@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 from deepdiff import DeepHash
 import matplotlib
+from yupi.core.featurizers import DistanceFeaturizer
 
 from sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
 from sahi_tracking.formats.mot_format import create_mot_folder_structure
@@ -13,6 +14,7 @@ from sahi_tracking.trackers.norfair_tracker import NorfairTracker
 from sahi_tracking.trackers.ocsorttracker import OcSortTracker
 from sahi_tracking.trackers.sort_tracker import SORTTracker
 from sahi_tracking.trackers.viou_tracker import VIoUTracker
+from sahi_tracking.trajectories.from_mot import yupi_traj_from_mot
 
 
 def find_or_create_tracking_results(tracking_experiment: dict, predictions_result: dict, dataset: dict, persistence_state: DataStatePersistance, overwrite_existing: bool = False):
@@ -38,7 +40,7 @@ def find_or_create_tracking_results(tracking_experiment: dict, predictions_resul
 
     # Delete existing predictions if overwrite_existing is True
     if overwrite_existing:
-        persistence_state.delete_existing('tracking_results', tracking_results_hash)
+        persistence_state.delete_existing_by_hash('tracking_results', tracking_results_hash)
 
     # Check if tracking results already exist. Return it or create otherwise.
     if not persistence_state.data_exists('tracking_results', tracking_results_hash):
@@ -71,13 +73,33 @@ def find_or_create_tracking_results(tracking_experiment: dict, predictions_resul
                 tracker.collect_results()
             #tracking_results['tracking_results']['sequence'][sequence['seq_name']] = tracker.get_mot_list()
 
+            # Get mot results as numpy
+            mot_data = tracker.get_mot_list()
+
+            # Filter Tracks by trajectory features
+            if len(mot_data) > 0:
+                if "filter" in tracking_experiment:
+                    if tracking_experiment['filter']['filter_type'] == "distance":
+                        instance_ids, trajs = yupi_traj_from_mot(mot_data)
+                        assert len(instance_ids) == len(trajs)
+                        distances = DistanceFeaturizer(0).featurize(trajs)
+                        #print(distances.shape)
+                        instance_ids = instance_ids.reshape(-1,1)
+                        #print(instance_ids.shape)
+                        print(distances)
+                        print(instance_ids)
+                        short_instance_ids =instance_ids[distances[:,0] < tracking_experiment['filter']['filter_config']['min_distance']]
+                        print(short_instance_ids)
+
+                        for id in short_instance_ids:
+                            mot_data = mot_data[~(mot_data[:,1] == id) ]
 
             # Save tracking results
             motformat_result_path =tracking_results_path / f"{dataset['dataset_config']['benchmark_name']}-all" / "default_tracker" / "data"
             motformat_result_path.mkdir(exist_ok=True, parents=True)
             tracking_results['tracking_results']['result_data_path'] = motformat_result_path
             tracking_results['tracking_results']['result_path'] = motformat_result_path.parents[2]
-            np.savetxt(motformat_result_path/ f"{sequence_preds['seq_name']}.txt", tracker.get_mot_list(), delimiter=",")
+            np.savetxt(motformat_result_path/ f"{sequence_preds['seq_name']}.txt", mot_data, delimiter=",")
 
         tracking_results['name'] = tracker.name
         tracking_results['hash'] = tracking_results_hash

@@ -33,7 +33,7 @@ def find_or_create_predictions(dataset: dict, prediction_params: dict, model_pat
 
     # Delete existing predictions if overwrite_existing is True
     if overwrite_existing:
-        persistence_state.delete_existing('predictions_results', predictions_results_hash)
+        persistence_state.delete_existing_by_hash('predictions_results', predictions_results_hash)
 
     # Check if dataset already exists return it if so or create otherwise
     if not persistence_state.data_exists('predictions_results', predictions_results_hash):

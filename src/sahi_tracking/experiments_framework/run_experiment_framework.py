@@ -11,37 +11,37 @@ from sahi_tracking.experiments_framework.tracking_result_creation import find_or
 from sahi_tracking.experiments_framework.utils import load_config_files
 from sahi_tracking.helper.config import get_local_data_path
 
-def run_experiment_framework(tracking_dataset_dict, sahi_predictions_params_dict, tracking_experiment_dict):
-    persistence_state = DataStatePersistance()
+def run_experiment_framework(tracking_dataset_dict, sahi_predictions_params_dict, tracking_experiment_dict,
+                             sahi_model_path=None, device='cpu', overwrite_existing=False, read_only=False):
+    persistence_state = DataStatePersistance(read_only)
 
     dataset = find_or_create_dataset(tracking_dataset_dict,
                                      persistence_state=persistence_state,
                                      cocovid_img_path=get_local_data_path() / "dataset/cocovid/images",
-                                     overwrite_existing=args.overwrite_existing)
+                                     overwrite_existing=overwrite_existing)
 
     predictions_result = find_or_create_predictions(dataset,
                                                     prediction_params=sahi_predictions_params_dict,
-                                                    model_path=args.sahi_model_path,
+                                                    model_path=sahi_model_path,
                                                     persistence_state=persistence_state,
-                                                    device=args.device,
+                                                    device=device,
                                                     cocovid_img_path=get_local_data_path() / "dataset/cocovid/images",
-                                                    overwrite_existing=args.overwrite_existing)
+                                                    overwrite_existing=overwrite_existing)
 
     for one_experiment in tracking_experiment_dict['tracker_experiments']:
         tracking_results = find_or_create_tracking_results(tracking_experiment=one_experiment,
                                                            predictions_result=predictions_result,
                                                            dataset=dataset,
                                                            persistence_state=persistence_state,
-                                                           overwrite_existing=args.overwrite_existing)
+                                                           overwrite_existing=overwrite_existing)
 
         evaluation_results = find_or_create_tracker_evaluations(tracking_results=tracking_results,
                                                                 predictions_result=predictions_result,
                                                                 dataset=dataset,
                                                                 persistence_state=persistence_state,
-                                                                overwrite_existing=args.overwrite_existing)
+                                                                overwrite_existing=overwrite_existing)
 
-    print(evaluation_results)
-
+    return evaluation_results
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -54,6 +54,10 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, required=False, default='cpu')
     args = parser.parse_args()
 
-    tracking_dataset_dict, sahi_predictions_params_dict, tracking_experiment_dict = load_config_files(args.tracking_dataset_path, args.tracking_experiment_path, args.sahi_predictions_params_path)
+    tracking_dataset_dict, sahi_predictions_params_dict, tracking_experiment_dict = load_config_files(
+        args.tracking_dataset_path, args.tracking_experiment_path, args.sahi_predictions_params_path
+    )
 
-    run_experiment_framework(tracking_dataset_dict, sahi_predictions_params_dict, tracking_experiment_dict)
+    run_experiment_framework(tracking_dataset_dict, sahi_predictions_params_dict, tracking_experiment_dict,
+        args.sahi_model_path, args.device, args.overwrite_existing)
+

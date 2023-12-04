@@ -69,8 +69,6 @@ def test_sort_tracker(tmp_path, dataset_config_dict_fixture, sahi_prediction_par
                                                                 dataset=dataset,
                                                                 persistence_state=persistence_state,
                                                                 overwrite_existing=True)
-        print(evaluation_results)
-
 
 def test_oc_sort_tracker(tmp_path, dataset_config_dict_fixture, sahi_prediction_params_dict_fixture,
                          tracking_oc_sort_experiment_dict_fixture):

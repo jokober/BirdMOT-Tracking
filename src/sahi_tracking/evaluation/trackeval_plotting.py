@@ -1,10 +1,8 @@
 import os
 import numpy as np
-from typing import List
-import random
 
 from sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
-from sahi_tracking.helper.config import get_evaluation_results_path
+from sahi_tracking.evaluation.trackeval_evaluation import load_trackeval_evaluation_data
 
 
 def plot_compare_trackers(data, cls, output_folder, plots_list=None):
@@ -231,24 +229,6 @@ def _plot_pareto_optimal_lines(x_values, y_values):
     x_pareto.append(x_pareto[t - 1])
     y_pareto.append(0)
     plt.plot(np.array(x_pareto), np.array(y_pareto), '--r')
-
-def load_trackeval_evaluation_data(eval_dict_list: List[dict], cls):
-    workdir_eval_path = get_evaluation_results_path()
-    data = {}
-    for eval_res in eval_dict_list:
-        with open(workdir_eval_path / eval_res['hash'] / "default_tracker" / (cls + '_summary.txt')) as f:
-            keys = next(f).split(' ')
-            done = False
-            while not done:
-                values = next(f).split(' ')
-                if len(values) == len(keys):
-                    done = True
-            if not 'tracker_name' in eval_res:
-                eval_res['tracker_name'] = f"tracker {random.randint(0,9)}"
-            data[eval_res['tracker_name']] = dict(zip(keys, map(float, values)))
-            print("## " + eval_res['tracker_name'])
-
-    return data
 
 if __name__ == "__main__":
     persistence_state = DataStatePersistance()

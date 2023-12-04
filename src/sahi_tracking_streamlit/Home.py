@@ -44,25 +44,29 @@ if st.session_state['dataset_path'] and st.session_state['experiment_path'] and 
     df_select = tracker_dataframe_with_selections(df.loc["COMBINED_SEQ"])
     filtered_tracking_hash = df_select['tracking_results_hash']
 
-    st.markdown("# 2 Tracker Results and Sequence Selection")
+    st.markdown("# 2 Tracker Results")
+    df_select = df_select.sort_values(by=['HOTA'],ignore_index=True, ascending=False)
+    df_select.index += 1
+    st.dataframe(df_select, column_order=['TrackerName','HOTA', 'DetA', 'AssA', 'LocA' ])
+
     selected_eval_results =  [state_persistance.load_data('evaluation_results', eval_hash) for eval_hash in df_select['eval_results_hash'].to_list()]
     selected_trackeval_data = load_trackeval_evaluation_data(selected_eval_results, "pedestrian")
-    selected_trackeval_data
+
     with st.expander("AssA vs DetA (HOTA)"):
         st.markdown(
         """
         **AssA:** Average alignment between matched trajectories, averaged over all detections.  
         **DetA:** Percentage of aligning detections.
         """)
-        st.pyplot(create_comparison_plot(selected_trackeval_data, "/media/data/BirdMOT/local_data_tracking/", *['AssA', 'DetA', 'HOTA', 'HOTA', 'geometric_mean']))
+        st.pyplot(create_comparison_plot(selected_trackeval_data, "/media/data/BirdMOT/local_data_tracking/", *['AssA', 'DetA', 'HOTA', 'HOTA', 'geometric_mean']), use_container_width=False)
 
     with st.expander("AssPr vs AssRe (AssA)"):
         st.markdown(
         """
-        **AssRe:** Measures how well trackers can avoid splitting the same object into multiple shorter tracks
+        **AssRe:** Measures how well trackers can avoid splitting the same object into multiple shorter tracks  
         **AssPr:** Measures how well tracks can avoid merging multiple objects together into a single track
         """)
-        st.pyplot(create_comparison_plot(selected_trackeval_data, "/media/data/BirdMOT/local_data_tracking/", *['AssPr', 'AssRe', 'HOTA', 'AssA', 'jaccard']))
+        st.pyplot(create_comparison_plot(selected_trackeval_data, "/media/data/BirdMOT/local_data_tracking/", *['AssPr', 'AssRe', 'HOTA', 'AssA', 'jaccard']), use_container_width=False)
 
     with st.expander("DetPr vs DetRe (DetA)"):
         st.markdown(
@@ -70,7 +74,7 @@ if st.session_state['dataset_path'] and st.session_state['experiment_path'] and 
         **DetPr:** Measures how well a tracker manages to not predict extra detections that aren’t there.  
         **DetRe:** Measures how well a tracker finds all the ground-truth detections
         """)
-        st.pyplot(create_comparison_plot(selected_trackeval_data, "/media/data/BirdMOT/local_data_tracking/", *['DetPr', 'DetRe', 'HOTA', 'DetA', 'jaccard']))
+        st.pyplot(create_comparison_plot(selected_trackeval_data, "/media/data/BirdMOT/local_data_tracking/", *['DetPr', 'DetRe', 'HOTA', 'DetA', 'jaccard']), use_container_width=False)
 
     with st.expander("HOTA(0) vs LocA(0) (HOTALocA(0))"):
         st.markdown(
@@ -78,7 +82,7 @@ if st.session_state['dataset_path'] and st.session_state['experiment_path'] and 
         **HOTA(0):** HOTA at the single lowest alpha threshold, so to not include the influence of localization accuracy)   
         **LocA(0):** LocA at the same threshold 
         """)
-        st.pyplot(create_comparison_plot(selected_trackeval_data, "/media/data/BirdMOT/local_data_tracking/", *['HOTA(0)', 'LocA(0)', 'HOTA', 'HOTALocA(0)', 'multiplication']))
+        st.pyplot(create_comparison_plot(selected_trackeval_data, "/media/data/BirdMOT/local_data_tracking/", *['HOTA(0)', 'LocA(0)', 'HOTA', 'HOTALocA(0)', 'multiplication']), use_container_width=False)
 
     with st.expander("HOTA vs LocA"):
         st.markdown(
@@ -86,7 +90,7 @@ if st.session_state['dataset_path'] and st.session_state['experiment_path'] and 
         **:**  
         **:** 
         """)
-        st.pyplot(create_comparison_plot(selected_trackeval_data, "/media/data/BirdMOT/local_data_tracking/", *['HOTA', 'LocA', 'HOTA', None, None]))
+        st.pyplot(create_comparison_plot(selected_trackeval_data, "/media/data/BirdMOT/local_data_tracking/", *['HOTA', 'LocA', 'HOTA', None, None]), use_container_width=False)
 
 
     #for plt in plot_compare_trackers(trackeval_data, "pedestrian", output_folder = "/media/data/BirdMOT/local_data_tracking/", plots_list= None):
@@ -94,12 +98,15 @@ if st.session_state['dataset_path'] and st.session_state['experiment_path'] and 
 
     #detections_res = state_persistance.load_data('predictions_results', track_res['predictions_hash'])
     #df = trackeval_to_pandas(evaluation_results_list[0]['evaluation_results'][0]['MotChallenge2DBox']['default_tracker'])
+    st.markdown('# 3 Sequence Selection')
+    prefix_filter = st.text_input('Contains-Filter', '')
+    df = df[df.index.str.contains(prefix_filter)]
     df_seq_select = dataframe_with_selections(df[
                                                   df['tracking_results_hash'].isin(filtered_tracking_hash.to_list()) &
                                                   (df['seq_name'] != 'COMBINED_SEQ')
                                               ])
 
-    st.markdown("# 3 Sequences")
+    st.markdown("# 4 Sequences")
     filtered_seq_tracking_hash = df_seq_select['tracking_results_hash'].to_list()
     filtered_seq_seq_name = df_seq_select['seq_name'].to_list()
 
@@ -111,30 +118,46 @@ if st.session_state['dataset_path'] and st.session_state['experiment_path'] and 
     filtered_seq_tracking_hash = comparison_sequence_tracker['tracking_results_hash'].to_list()
 
     # Image
-    track_res = state_persistance.load_data('tracking_results', filtered_seq_tracking_hash[0])
-    dataset_res = state_persistance.load_data('datasets', track_res['dataset_hash'])
-    detections_res = state_persistance.load_data('predictions_results', track_res['predictions_hash'])
+    if len(filtered_seq_tracking_hash) == 0:
+        st.warning('No sequence selected. Select sequence in order to show images', icon="⚠️")
+    else:
+        track_res = state_persistance.load_data('tracking_results', filtered_seq_tracking_hash[0])
+        dataset_res = state_persistance.load_data('datasets', track_res['dataset_hash'])
+        detections_res = state_persistance.load_data('predictions_results', track_res['predictions_hash'])
 
-    show_detections = st.checkbox("Show Detections")
-    show_gt = st.checkbox("Show Ground Truth (Tracking)")
-    show_track_res = st.checkbox("Show Tracking Results")
-    show_all_tracks = st.checkbox("Annotate whole sequence on current frame")
+        show_detections = st.checkbox("Show Detections")
+        show_gt = st.checkbox("Show Ground Truth (Tracking)")
+        show_track_res = st.checkbox("Show Tracking Results")
+        show_all_tracks = st.checkbox("Annotate whole sequence on current frame")
 
-    viz_obj = SequenceVizualizer.from_det_gt_pred(df_seq_select['seq_name'].to_list()[0], dataset_res, detections_res,
-                                                  track_res, show_detections= show_detections, show_gt= show_gt,
-                                                  show_track_res= show_track_res, show_all_tracks = show_all_tracks)
-    img = viz_obj.next_frame()
-
-
-    container = st.empty()
-    cols = st.columns(5)
-    with cols[4]: st.button("Next ➡️", on_click=next, use_container_width=True)
-    with cols[3]: st.button("Last", on_click=last, use_container_width=True)
-    with cols[2]: st.text(str(st.session_state.counter) + '/' + str(viz_obj.total_frames))
-    with cols[1]: st.button("First", on_click=first, use_container_width=True)
-    with cols[0]: st.button("⬅️ Previous", on_click=prev, use_container_width=True)
+        viz_obj = SequenceVizualizer.from_det_gt_pred(df_seq_select['seq_name'].to_list()[0], dataset_res, detections_res,
+                                                      track_res, show_detections= show_detections, show_gt= show_gt,
+                                                      show_track_res= show_track_res, show_all_tracks = show_all_tracks)
+        img = viz_obj.next_frame()
 
 
-    # Fill layout
-    with container.container():
-        st.image(viz_obj.frame_by_number(st.session_state.counter))
+        container = st.empty()
+        cols = st.columns(5)
+        with cols[4]: st.button("Next ➡️", on_click=next, use_container_width=True)
+        with cols[3]: st.button("Last", on_click=last, use_container_width=True)
+        with cols[2]: st.text(str(st.session_state.counter) + '/' + str(viz_obj.total_frames))
+        with cols[1]: st.button("First", on_click=first, use_container_width=True)
+        with cols[0]: st.button("⬅️ Previous", on_click=prev, use_container_width=True)
+
+
+        # Fill layout
+        with container.container():
+            st.image(viz_obj.frame_by_number(st.session_state.counter))
+
+            for idx, plt in enumerate(viz_obj.create_frame_gallery(max_rows=2, max_cols=6)):
+                with st.expander(f"{idx}"):
+                    st.pyplot(plt, use_container_width=False)
+
+    with st.expander("Video"):
+        fps = st.number_input("FPS", value=29)
+        video_path = viz_obj.create_video(fps)
+        video_file = open(video_path.as_posix(), 'rb')
+        video_bytes = video_file.read()
+
+        st.video(video_bytes)
+        st.download_button('Download Video', video_bytes, file_name=video_path.name)

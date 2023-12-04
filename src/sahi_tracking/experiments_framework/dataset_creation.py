@@ -31,7 +31,7 @@ def find_or_create_dataset(dataset_config: dict, persistence_state: DataStatePer
 
     # Delete existing dataset if overwrite_existing is True
     if overwrite_existing:
-        persistence_state.state.delete_existing('datasets', dataset_hash)
+        persistence_state.state.delete_existing_by_hash('datasets', dataset_hash)
 
     # Check if dataset already exists return it if so or create otherwise
     if not persistence_state.data_exists('datasets', dataset_hash):

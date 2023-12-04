@@ -73,7 +73,6 @@ class NorfairTracker:
             self.matrix_predictions = np.vstack((self.matrix_predictions, new_row))
 
     def get_mot_list(self):
-        shape = self.matrix_predictions.shape
         return self.matrix_predictions
 
     def create_tracker_name(self, distance_function):
