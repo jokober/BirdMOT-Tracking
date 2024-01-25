@@ -70,7 +70,7 @@ def trackeval_evaluate(GT_FOLDER, TRACKERS_FOLDER, OUTPUT_FOLDER, SEQMAP_FILE, B
     dataset_config['CLASSES_TO_EVAL'] = CLASSES_TO_EVAL
 
 
-    metrics_config = {'METRICS': ['HOTA', 'CLEAR', 'Identity'], 'THRESHOLD': 0.01} #ToDo: Add Threshold as argument?
+    metrics_config = {'METRICS': ['HOTA', 'CLEAR', 'Identity'], 'THRESHOLD': 0.4} #ToDo: Add Threshold as argument?
     #config = {**default_eval_config, **default_dataset_config, **default_metrics_config}  # Merge default configs
 
 

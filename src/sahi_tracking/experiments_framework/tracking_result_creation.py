@@ -1,10 +1,11 @@
+import time
 from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
 from deepdiff import DeepHash
 import matplotlib
-from yupi.core.featurizers import DistanceFeaturizer
+from yupi.core.featurizers import DistanceFeaturizer, DisplacementFeaturizer
 
 from sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
 from sahi_tracking.formats.mot_format import create_mot_folder_structure
@@ -49,6 +50,8 @@ def find_or_create_tracking_results(tracking_experiment: dict, predictions_resul
 
         # Run tracking
         assert len(predictions_result['predictions']) == len(dataset['dataset']["sequences"])
+        frame_counter = 0
+        time_aggregator = 0
         for sequence_preds, seq_info in zip(predictions_result['predictions'], dataset['dataset']["sequences"]):
             #mot_path, mot_img_path, det_path, gt_path = create_mot_folder_structure(sequence['seq_name'], tracking_results_path / 'MOT')
 
@@ -66,8 +69,14 @@ def find_or_create_tracking_results(tracking_experiment: dict, predictions_resul
             else:
                 raise NotImplementedError("The tracker_type is not implemented.")
 
+            time_start = time.time()
             for frame_pred in sorted(sequence_preds['frame_predictions'], key=lambda d: d[0]):
+                #print(frame_pred)
+                frame_counter+=1
                 tracker.update_online(frame_pred[1])
+
+            time_aggregator += time.time() - time_start
+            fps = frame_counter / time_aggregator
 
             if tracking_experiment['tracker_type'] == 'viou':
                 tracker.collect_results()
@@ -79,31 +88,41 @@ def find_or_create_tracking_results(tracking_experiment: dict, predictions_resul
             # Filter Tracks by trajectory features
             if len(mot_data) > 0:
                 if "filter" in tracking_experiment:
-                    if tracking_experiment['filter']['filter_type'] == "distance":
+                    if tracking_experiment['filter']['filter_type'] == "simple":
                         instance_ids, trajs = yupi_traj_from_mot(mot_data)
                         assert len(instance_ids) == len(trajs)
-                        distances = DistanceFeaturizer(0).featurize(trajs)
-                        #print(distances.shape)
-                        instance_ids = instance_ids.reshape(-1,1)
-                        #print(instance_ids.shape)
-                        print(distances)
-                        print(instance_ids)
-                        short_instance_ids =instance_ids[distances[:,0] < tracking_experiment['filter']['filter_config']['min_distance']]
-                        print(short_instance_ids)
+                        if 'min_distance' in tracking_experiment['filter']['filter_config']:
+                            distances = DistanceFeaturizer(0).featurize(trajs)
+                            instance_ids = instance_ids.reshape(-1,1)
+                            short_distance_instance_ids =instance_ids[distances[:,0] < tracking_experiment['filter']['filter_config']['min_distance']]
 
-                        for id in short_instance_ids:
+                        if 'min_displacement' in tracking_experiment['filter']['filter_config']:
+                            displacements = DisplacementFeaturizer(0).featurize(trajs)
+                            instance_ids = instance_ids.reshape(-1,1)
+                            short_displacement_instance_ids =instance_ids[displacements[:,0] < tracking_experiment['filter']['filter_config']['min_displacement']]
+
+                        if 'min_track_length' in tracking_experiment['filter']['filter_config']:
+                            md=deepcopy(mot_data)
+                            counts = np.array(np.unique(md[:,1], return_counts=True))
+                            counts = np.reshape(np.ravel(counts), [-1, 2], order="F")
+                            short_tracks_instance_ids =counts[counts[:,1] < tracking_experiment['filter']['filter_config']['min_track_length']][:,0]
+
+
+                        for id in list(short_distance_instance_ids) + list(short_displacement_instance_ids) + list(short_tracks_instance_ids):
                             mot_data = mot_data[~(mot_data[:,1] == id) ]
 
             # Save tracking results
             motformat_result_path =tracking_results_path / f"{dataset['dataset_config']['benchmark_name']}-all" / "default_tracker" / "data"
             motformat_result_path.mkdir(exist_ok=True, parents=True)
             tracking_results['tracking_results']['result_data_path'] = motformat_result_path
+            tracking_results['tracking_results']['fps'] = fps
             tracking_results['tracking_results']['result_path'] = motformat_result_path.parents[2]
             np.savetxt(motformat_result_path/ f"{sequence_preds['seq_name']}.txt", mot_data, delimiter=",")
 
-        tracking_results['name'] = tracker.name
+        tracking_results['name'] = f"{tracker.name}+Filter" if "filter" in tracking_experiment else tracker.name
         tracking_results['hash'] = tracking_results_hash
         persistence_state.update_state('append', 'tracking_results', tracking_results)
+
     else:
         tracking_results = persistence_state.load_data('tracking_results', tracking_results_hash)
 

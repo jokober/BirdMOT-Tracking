@@ -38,7 +38,7 @@ git clone https://github.com/abewley/sort.git
           "max_age": 30,
           "min_hits": 3,
           "iou_threshold": 0.3,
-          "delta_t": 3,
+          "delta_t": 3, # Used in ORU
           "asso_func": "iou",
           "inertia": 0.2,
           "use_byte": false

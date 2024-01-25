@@ -8,8 +8,8 @@ from sahi_tracking.trackers.sort.sort import Sort
 
 
 class SORTTracker:
-    def __init__(self, accumulate_results, max_age=1, min_hits=3, iou_threshold=0.3):
-        self.tracker = Sort( max_age=max_age, min_hits=min_hits, iou_threshold=iou_threshold)
+    def __init__(self, accumulate_results, max_age=1, min_hits=3, iou_threshold=0.3, alpha=1):
+        self.tracker = Sort( max_age=max_age, min_hits=min_hits, iou_threshold=iou_threshold, alpha=alpha)
 
         self.accumulate_results = accumulate_results
         self.matrix_predictions = np.empty((0, 10), dtype=float)

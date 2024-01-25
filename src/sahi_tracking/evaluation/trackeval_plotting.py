@@ -95,7 +95,7 @@ def create_comparison_plot(data, out_loc, y_label, x_label, sort_label, bg_label
     # Find best fitting boundaries for data
     boundaries = _get_boundaries(x_values, y_values, round_val=gap_val/2)
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 7), dpi=80)
 
     # Plot background contour
     if bg_function is not None:
@@ -106,7 +106,8 @@ def create_comparison_plot(data, out_loc, y_label, x_label, sort_label, bg_label
 
     # Plot data points with number labels
     labels = np.arange(len(y_values)) + 1
-    plt.plot(x_values, y_values, 'b.', markersize=15)
+    plt.plot(x_values, y_valuessim, 'b.', markersize=15)
+
     for xx, yy, l in zip(x_values, y_values, labels):
         plt.text(xx, yy, str(l), color="red", fontsize=15)
 
@@ -133,6 +134,7 @@ def create_comparison_plot(data, out_loc, y_label, x_label, sort_label, bg_label
 
     os.makedirs(out_loc, exist_ok=True)
     filename = os.path.join(out_loc, title.replace(' ', '_'))
+
     plt.savefig(filename + '.png', bbox_inches='tight', pad_inches=0.05)
 
     return plt
@@ -228,7 +230,7 @@ def _plot_pareto_optimal_lines(x_values, y_values):
         cxs = cxs[remaining]
     x_pareto.append(x_pareto[t - 1])
     y_pareto.append(0)
-    plt.plot(np.array(x_pareto), np.array(y_pareto), '--r')
+    plt.plot(np.array(x_pareto), np.array(y_pareto), '--g')
 
 if __name__ == "__main__":
     persistence_state = DataStatePersistance()

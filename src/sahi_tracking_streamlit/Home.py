@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 import plotly.express as px
 
@@ -13,7 +14,7 @@ from sahi_tracking.utils.viz import SequenceVizualizer
 
 from sahi_tracking_streamlit.experiment_selection import show_experiment_selection
 from sahi_tracking_streamlit.helper import initialize_default_session_state
-from sahi_tracking_streamlit.load_data import load_data
+from sahi_tracking_streamlit.load_data import load_data, get_tracking_experiment_conf
 from sahi_tracking_streamlit.ui_components.dataframes import dataframe_with_selections, \
     tracker_dataframe_with_selections, one_sequence_dataframe_with_selections
 
@@ -40,6 +41,17 @@ if st.session_state['dataset_path'] and st.session_state['experiment_path'] and 
         evaluation_results_list = state_persistance.state['evaluation_results']
 
     st.markdown("# 1 Tracker Overview and Selection")
+    for eval in evaluation_results_list:
+        # Add fps from tracking resul
+        tracking_result = state_persistance.load_data('tracking_results', eval['tracking_results_hash'])['tracking_results']
+        print("eval")
+        print(type(eval))
+        print(type(tracking_result))
+        if 'fps' in tracking_result:
+            eval['fps'] = tracking_result['fps']
+        else:
+            eval['fps'] = None
+
     df = evaluation_results_to_pandas(evaluation_results_list)
     df_select = tracker_dataframe_with_selections(df.loc["COMBINED_SEQ"])
     filtered_tracking_hash = df_select['tracking_results_hash']
@@ -47,7 +59,7 @@ if st.session_state['dataset_path'] and st.session_state['experiment_path'] and 
     st.markdown("# 2 Tracker Results")
     df_select = df_select.sort_values(by=['HOTA'],ignore_index=True, ascending=False)
     df_select.index += 1
-    st.dataframe(df_select, column_order=['TrackerName','HOTA', 'DetA', 'AssA', 'LocA' ])
+    st.dataframe(df_select, column_order=['TrackerName','HOTA', 'DetA', 'AssA', 'LocA', 'fps' ])
 
     selected_eval_results =  [state_persistance.load_data('evaluation_results', eval_hash) for eval_hash in df_select['eval_results_hash'].to_list()]
     selected_trackeval_data = load_trackeval_evaluation_data(selected_eval_results, "pedestrian")
@@ -99,12 +111,56 @@ if st.session_state['dataset_path'] and st.session_state['experiment_path'] and 
     #detections_res = state_persistance.load_data('predictions_results', track_res['predictions_hash'])
     #df = trackeval_to_pandas(evaluation_results_list[0]['evaluation_results'][0]['MotChallenge2DBox']['default_tracker'])
     st.markdown('# 3 Sequence Selection')
+
+    # Optional Column Select
+    unique_tracking_hashes = pd.unique(df['tracking_results_hash'])
+    tracking_param_set = set()
+    for tracking_hash in unique_tracking_hashes:
+        tracking_param_set.update(get_tracking_experiment_conf(tracking_hash)['tracking_experiment']['tracker_config'].keys())
+    tracking_param_options = st.multiselect(
+        'Select tracker parameters to add',
+       tracking_param_set)
+    if len(tracking_param_options) > 0:
+        for param in tracking_param_options:
+            for tracking_hash in unique_tracking_hashes:
+                df.loc[df['tracking_results_hash'] == tracking_hash, param] = get_tracking_experiment_conf(tracking_hash)['tracking_experiment']['tracker_config'].get(param)
+
+    # Filter Column Selection
+    filter_param_set = set()
+    filter_param_dict_by_hash = {}
+    for tracking_hash in unique_tracking_hashes:
+        if 'filter' in get_tracking_experiment_conf(tracking_hash)['tracking_experiment']:
+            filter_conf_df = pd.json_normalize(get_tracking_experiment_conf(tracking_hash)['tracking_experiment']['filter'], sep='_')
+            filter_conf_dict = filter_conf_df.to_dict(orient='records')[0]
+            filter_param_dict_by_hash[tracking_hash] = filter_conf_dict
+            filter_param_set.update(filter_conf_dict.keys())
+    filter_param_options = st.multiselect(
+        'Select filter parameters to add',
+       filter_param_set)
+    if len(filter_param_options) > 0:
+        for param in filter_param_options:
+            for tracking_hash in unique_tracking_hashes:
+                if tracking_hash in filter_param_dict_by_hash:
+                    df.loc[df['tracking_results_hash'] == tracking_hash, param] = filter_param_dict_by_hash[tracking_hash][param]
+                    tracking_hash
+                    filter_param_dict_by_hash
+                    filter_param_dict_by_hash.get(tracking_hash, "blah")
+                    filter_param_dict_by_hash[tracking_hash][param]
+
+    # Metrics Column Selection
+    metrics_options = st.multiselect(
+        'Select metrics to show as columns',
+       ['DetA___5', 'AssA___5', 'DetRe___5', 'DetPr___5', 'AssRe___5', 'AssPr___5'] + METRICS)
+
+
     prefix_filter = st.text_input('Contains-Filter', '')
+
     df = df[df.index.str.contains(prefix_filter)]
     df_seq_select = dataframe_with_selections(df[
                                                   df['tracking_results_hash'].isin(filtered_tracking_hash.to_list()) &
                                                   (df['seq_name'] != 'COMBINED_SEQ')
-                                              ])
+                                              ],
+                                              columns=metrics_options + tracking_param_options  + filter_param_options)
 
     st.markdown("# 4 Sequences")
     filtered_seq_tracking_hash = df_seq_select['tracking_results_hash'].to_list()
@@ -113,7 +169,8 @@ if st.session_state['dataset_path'] and st.session_state['experiment_path'] and 
     comparison_sequence_tracker = one_sequence_dataframe_with_selections(df[
                                                   df['seq_name'].isin(filtered_seq_seq_name)
                                               ],
-                                             default_tracking_results_hash = filtered_seq_tracking_hash
+                                             default_tracking_results_hash = filtered_seq_tracking_hash,
+                                                                         columns =metrics_options + tracking_param_options  + filter_param_options
                                              )
     filtered_seq_tracking_hash = comparison_sequence_tracker['tracking_results_hash'].to_list()
 
@@ -121,7 +178,7 @@ if st.session_state['dataset_path'] and st.session_state['experiment_path'] and 
     if len(filtered_seq_tracking_hash) == 0:
         st.warning('No sequence selected. Select sequence in order to show images', icon="⚠️")
     else:
-        track_res = state_persistance.load_data('tracking_results', filtered_seq_tracking_hash[0])
+        track_res = get_tracking_experiment_conf(filtered_seq_tracking_hash[0])
         dataset_res = state_persistance.load_data('datasets', track_res['dataset_hash'])
         detections_res = state_persistance.load_data('predictions_results', track_res['predictions_hash'])
 
@@ -149,13 +206,14 @@ if st.session_state['dataset_path'] and st.session_state['experiment_path'] and 
         with container.container():
             st.image(viz_obj.frame_by_number(st.session_state.counter))
 
-            for idx, plt in enumerate(viz_obj.create_frame_gallery(max_rows=2, max_cols=6)):
+            for idx, plt in enumerate(viz_obj.create_frame_gallery(max_rows=4, max_cols=8)):
+                plt.savefig(f"gallery{df_seq_select['seq_name'].to_list()[0]}_{str(idx)}.png")
                 with st.expander(f"{idx}"):
                     st.pyplot(plt, use_container_width=False)
 
     with st.expander("Video"):
         fps = st.number_input("FPS", value=29)
-        video_path = viz_obj.create_video(fps)
+        video_path = viz_obj.create_video(fps, f"video_{df_seq_select['seq_name'].to_list()[0]}")
         video_file = open(video_path.as_posix(), 'rb')
         video_bytes = video_file.read()
 
