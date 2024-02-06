@@ -26,7 +26,11 @@ Metric
 arguments:
 'METRICS': ['HOTA', 'CLEAR', 'Identity', 'VACE']
 """
+from typing import List
+
 import trackeval
+
+from sahi_tracking.helper.config import get_evaluation_results_path
 
 default_config = {
     'TRACKERS_TO_EVAL': None,  # Filenames of trackers to eval (if None, all in folder)
@@ -48,7 +52,9 @@ default_config = {
     # If True, then the middle 'benchmark-split' folder is skipped for both.
 }
 
-def trackeval_evaluate(GT_FOLDER, TRACKERS_FOLDER, OUTPUT_FOLDER, SEQMAP_FILE, BENCHMARK="MOT17", SPLIT_TO_EVAL="all", CLASSES_TO_EVAL=['pedestrian']):
+
+def trackeval_evaluate(GT_FOLDER, TRACKERS_FOLDER, OUTPUT_FOLDER, SEQMAP_FILE, BENCHMARK="MOT17", SPLIT_TO_EVAL="all",
+                       CLASSES_TO_EVAL=['pedestrian']):
     eval_config = trackeval.Evaluator.get_default_eval_config()
     eval_config['DISPLAY_LESS_PROGRESS'] = False
 
@@ -65,12 +71,9 @@ def trackeval_evaluate(GT_FOLDER, TRACKERS_FOLDER, OUTPUT_FOLDER, SEQMAP_FILE, B
         dataset_config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
     dataset_config['CLASSES_TO_EVAL'] = CLASSES_TO_EVAL
 
+    metrics_config = {'METRICS': ['HOTA', 'CLEAR', 'Identity'], 'THRESHOLD': 0.4}  # ToDo: Add Threshold as argument?
+    # config = {**default_eval_config, **default_dataset_config, **default_metrics_config}  # Merge default configs
 
-    metrics_config = {'METRICS': ['HOTA', 'CLEAR', 'Identity'], 'THRESHOLD': 0.01} #ToDo: Add Threshold as argument?
-    #config = {**default_eval_config, **default_dataset_config, **default_metrics_config}  # Merge default configs
-
-
-    # Run code
     evaluator = trackeval.Evaluator(eval_config)
     dataset_list = [trackeval.datasets.MotChallenge2DBox(dataset_config)]
     metrics_list = []
@@ -80,3 +83,21 @@ def trackeval_evaluate(GT_FOLDER, TRACKERS_FOLDER, OUTPUT_FOLDER, SEQMAP_FILE, B
     if len(metrics_list) == 0:
         raise Exception('No metrics selected for evaluation')
     return evaluator.evaluate(dataset_list, metrics_list)
+
+
+def load_trackeval_evaluation_data(eval_dict_list: List[dict], cls):
+    workdir_eval_path = get_evaluation_results_path()
+    data = {}
+    for eval_res in eval_dict_list:
+        with open(workdir_eval_path / eval_res['hash'] / "default_tracker" / (cls + '_summary.txt')) as f:
+            keys = next(f).split(' ')
+            done = False
+            while not done:
+                values = next(f).split(' ')
+                if len(values) == len(keys):
+                    done = True
+            assert 'tracker_name' in eval_res
+            data[eval_res['hash']] = dict(zip(keys, map(float, values)))
+            print("## " + eval_res['tracker_name'])
+
+    return data

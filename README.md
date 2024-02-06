@@ -1,44 +1,38 @@
+BirdMOT Tracking Experiments
+========
+This repository contains the code used to run experiments on bird tracking for my master thesis. 
 
-## Prepare local_data directory
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
+*Note: This code is not intended to be maintained.*
 
 
-## Environment
-Set the SAHI_TRACKING_DATA_PATH pointing to your local_data folder.
 
-```
-export SAHI_TRACKING_DATA_PATH=/data/path/to/local_data
-```
-
-Alternatively, you can add the environment variable permanently to your .bashrc or .zshrc file, depending on what shell you are using.
-
-## Install dependencies
-```
+## Install
+### Install using Poetry
+```bash
 poetry install
 ```
 
- pip install git+https://github.com/noahcao/OC_SORT.git
+### Install dependencies
 
-# Tracker Configurations
-## OC_SORT
-        "tracker_type": "oc_sort",
-        "tracker_config": {
-          "det_thresh": ,
-          "max_age": 30,
-          "min_hits": 3,
-          "iou_threshold": 0.3,
-          "delta_t": 3,
-          "asso_func": "iou",
-          "inertia": 0.2,
-          "use_byte": false
+```bash
+pip install torch, lap
+pip3 install cython; pip3 install 'git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI'
+pip3 install cython_bbox pandas xmltodict
+pip install git+https://github.com/noahcao/OC_SORT.git
+```
 
-"iou": iou_batch,
-                "giou": giou_batch,
-                "ciou": ciou_batch,
-                "diou": diou_batch,
-                "ct_dist": ct_dist}
+### Install additional trackers
+```
+cd src/sahi_tracking/trackers/
+git clone https://github.com/abewley/sort.git
+```
+### Environment
+Set the SAHI_TRACKING_DATA_PATH pointing to your local_data folder.
 
-## ByteTrack
-frame_rate
-track_thresh
-track_buffer
-match_thresh # Used for high score detection
+```
+export SAHI_TRACKING_DATA_PATH=/path/to/local_data
+```
+
+Alternatively, you can add the environment variable permanently to your .bashrc or .zshrc file, depending on what shell you are using.

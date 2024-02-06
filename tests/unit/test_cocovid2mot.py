@@ -1,4 +1,4 @@
-from src.sahi_tracking.formats.cocovid2mot import cocovid2mot
+from sahi_tracking.formats.cocovid2mot import cocovid2mot
 from tests.fixtures.fixtures import coco_annotations_fixture_dir, cocovid_images_fixture_dir, primary_cocovid_fixture_path, \
     primary_sequence_dict_fixture
 

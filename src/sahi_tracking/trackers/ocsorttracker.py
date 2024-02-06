@@ -14,6 +14,8 @@ class OcSortTracker:
         self.matrix_predictions = np.empty((0, 10), dtype=float)
         self.frame_number = 0
 
+        self.name = self.create_tracker_name(asso_func, use_byte)
+
     def offline_tracking(self, object_prediction_list: PredictionResult):
         raise NotImplementedError("The offline tracking is not implemented.")
 
@@ -25,7 +27,6 @@ class OcSortTracker:
             dets = np.hstack((dets, scores))
         else:
             dets = np.empty(((0, 5)), dtype=float)
-
 
         tracked_objects = self.tracker.update(dets, (3840, 2160), (3840, 2160))
 
@@ -56,3 +57,9 @@ class OcSortTracker:
 
     def get_mot_list(self):
         return self.matrix_predictions
+
+    def create_tracker_name(self, asso_func, use_byte):
+        name = f"OC_SORT ({asso_func})"
+        if use_byte == True:
+            name = name + " + BYTE"
+        return name

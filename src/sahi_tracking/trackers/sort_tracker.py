@@ -1,74 +1,63 @@
 from typing import List
-import numpy as np
 
+import numpy as np
 from sahi.prediction import PredictionResult
 
+from sahi_tracking.trackers.sort.sort import Sort
 
-class SortTracker:
-    def __init__(self,  **kwargs):
-        self.tracker = Tracker(
-            initialization_delay=initialization_delay,
-            distance_function=distance_function,
-            hit_counter_max=hit_counter_max,
-            filter_factory=OptimizedKalmanFilterFactory(),
-            distance_threshold=distance_threshold,
-        )
+
+class SORTTracker:
+    def __init__(self, accumulate_results, max_age=1, min_hits=3, iou_threshold=0.3, alpha=1):
+        self.tracker = Sort(max_age=max_age, min_hits=min_hits, iou_threshold=iou_threshold, alpha=alpha)
 
         self.accumulate_results = accumulate_results
-        self.matrix_predictions = np.empty((0,10), dtype=float)
-        self.frame_number = 1
+        self.matrix_predictions = np.empty((0, 10), dtype=float)
+        self.frame_number = 0
+
+        self.name = self.create_tracker_name()
 
     def offline_tracking(self, object_prediction_list: PredictionResult):
         raise NotImplementedError("The offline tracking is not implemented.")
 
+    def update_online(self, object_prediction_list: List[PredictionResult]):
+        self.frame_number += 1
+        if len(object_prediction_list) > 0:
+            dets = np.array([prediction.bbox.to_xyxy() for prediction in object_prediction_list])
+            scores = np.array([[prediction.score.value for prediction in object_prediction_list]]).reshape(-1, 1)
+            dets = np.hstack((dets, scores))
+        else:
+            dets = np.empty(((0, 5)), dtype=float)
 
-    def update_online(self, object_prediction_list: PredictionResult):
-        detections = self.get_detections(object_prediction_list)
-        tracked_objects = self.tracker.update(detections=detections)
+        tracked_objects = self.tracker.update(dets)
 
-        if self.accumulate_results:
+        if self.accumulate_results and tracked_objects.shape[0] > 0:
             self.accumulate(tracked_objects)
 
         return tracked_objects
 
-    def get_detections(self, object_prediction_list: List[PredictionResult]) -> List[Detection]:
-        detections = []
-        for prediction in object_prediction_list:
-            bbox = prediction.bbox
-
-            detection_as_xyxy = bbox.to_voc_bbox()
-            bbox = np.array(
-                [
-                    [detection_as_xyxy[0], detection_as_xyxy[1]],
-                    [detection_as_xyxy[2], detection_as_xyxy[3]],
-                ]
-            )
-            detections.append(
-                Detection(
-                    points=bbox,
-                    scores=np.array([prediction.score.value for _ in bbox]),
-                    label=prediction.category.id,
-                )
-            )
-        return detections
-
     def accumulate(self, tracked_objects):
-        for obj in tracked_objects:
+        trk_num = tracked_objects.shape[0]
+        boxes = tracked_objects[:, :4]
+        ids = tracked_objects[:, 4]
+
+        for trk in range(trk_num):
             new_row = [
-                self.frame_number,
-                obj.id,
-                obj.estimate[0, 0],
-                obj.estimate[0, 1],
-                obj.estimate[1, 0],
-                obj.estimate[1, 1],
-                -1,
+                int(self.frame_number),
+                int(ids[trk]),
+                boxes[trk][0],
+                boxes[trk][1],
+                boxes[trk][2],
+                boxes[trk][3],
+                1,
                 -1,
                 -1,
                 -1,
             ]
             self.matrix_predictions = np.vstack((self.matrix_predictions, new_row))
 
-        self.frame_number += 1
     def get_mot_list(self):
-        shape = self.matrix_predictions.shape
         return self.matrix_predictions
+
+    def create_tracker_name(self):
+        name = f"SORT"
+        return name

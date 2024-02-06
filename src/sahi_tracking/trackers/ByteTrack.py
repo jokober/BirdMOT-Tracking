@@ -1,3 +1,4 @@
+from collections import namedtuple
 from typing import List
 
 import numpy as np
@@ -5,14 +6,24 @@ from sahi.prediction import PredictionResult
 from trackers.byte_tracker.byte_tracker import BYTETracker
 from trackers.ocsort_tracker.ocsort import OCSort
 
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
 
 class ByteTrack:
-    def __init__(self, accumulate_results, frame_rate, **args):
-        self.tracker = BYTETracker(frame_rate, args)
+    def __init__(self, accumulate_results, args):
+        # Convert args to nametuple as the ByteTrack implementation accesses the args as an attribute
+        Args = namedtuple('ByteTrackArgs', ['frame_rate', 'track_thresh', 'track_buffer', 'match_thresh', 'mot20'])
+        args=Args(args['frame_rate'],args['track_thresh'],args['track_buffer'],args['match_thresh'], False)
+
+        self.tracker = BYTETracker(args, args.frame_rate)
 
         self.accumulate_results = accumulate_results
         self.matrix_predictions = np.empty((0, 10), dtype=float)
         self.frame_number = 0
+
+        self.name = self.create_tracker_name()
 
     def offline_tracking(self, object_prediction_list: PredictionResult):
         raise NotImplementedError("The offline tracking is not implemented.")
@@ -31,8 +42,10 @@ class ByteTrack:
 
         tracked_objects = self.tracker.update(dets, (3840, 2160), (3840, 2160))
 
-        if self.accumulate_results and tracked_objects.shape[0] > 0:
-            self.accumulate(tracked_objects)
+        tracked_objects = np.array(tracked_objects)
+
+        #if self.accumulate_results and tracked_objects.shape[0] > 0:
+        #    self.accumulate(tracked_objects)
 
         return tracked_objects
 
@@ -58,3 +71,7 @@ class ByteTrack:
 
     def get_mot_list(self):
         return self.matrix_predictions
+
+    def create_tracker_name(self):
+        name = f"ByteTrack"
+        return name
