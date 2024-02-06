@@ -18,18 +18,21 @@ def trackeval_to_pandas(trackeval_res: dict):
                              *hota_res['AssA'], *hota_res['LocA'], *hota_res['DetRe'], *hota_res['DetPr'],
                              *hota_res['DetA'], *hota_res['HOTA']]
 
-
     column_names = [*METRICS, *get_linspaced_metric_names('HOTA_TP'), *get_linspaced_metric_names('HOTA_FN'),
-                    *get_linspaced_metric_names('HOTA_FP'), *get_linspaced_metric_names('AssRe'), *get_linspaced_metric_names('AssPr'),
-                    *get_linspaced_metric_names('AssA'), *get_linspaced_metric_names('LocA'), *get_linspaced_metric_names('DetRe'),
-                    *get_linspaced_metric_names('DetPr'), *get_linspaced_metric_names('DetA'), *get_linspaced_metric_names('HOTA')]
+                    *get_linspaced_metric_names('HOTA_FP'), *get_linspaced_metric_names('AssRe'),
+                    *get_linspaced_metric_names('AssPr'),
+                    *get_linspaced_metric_names('AssA'), *get_linspaced_metric_names('LocA'),
+                    *get_linspaced_metric_names('DetRe'),
+                    *get_linspaced_metric_names('DetPr'), *get_linspaced_metric_names('DetA'),
+                    *get_linspaced_metric_names('HOTA')]
     assert len(results_dict[key]) == len(column_names)
 
     return pd.DataFrame.from_dict(results_dict, orient='index',
-                           columns=column_names)
+                                  columns=column_names)
+
 
 def evaluation_results_to_pandas(eval_res_list: List[dict]):
-    dataframes =[]
+    dataframes = []
     print(eval_res_list)
     for eval_res in eval_res_list:
         df = trackeval_to_pandas(eval_res['evaluation_results'][0]['MotChallenge2DBox']['default_tracker'])
@@ -37,9 +40,9 @@ def evaluation_results_to_pandas(eval_res_list: List[dict]):
         df['tracking_results_hash'] = eval_res['tracking_results_hash']
         df['eval_results_hash'] = eval_res['hash']
         df['fps'] = eval_res['fps']
+        df['det_fps'] = eval_res['det_fps']
         df['seq_name'] = df.index
         trackeval_data = load_trackeval_evaluation_data([eval_res], "pedestrian")[eval_res['hash']]
-        print(f"trackeval_data: {trackeval_data}")
         df['HOTA'] = trackeval_data['HOTA']
         df['DetA'] = trackeval_data['DetA']
         df['AssA'] = trackeval_data['AssA']
@@ -49,13 +52,13 @@ def evaluation_results_to_pandas(eval_res_list: List[dict]):
         df['AssPr'] = trackeval_data['AssPr']
         df['LocA'] = trackeval_data['LocA']
 
-
         dataframes.append(df)
 
     dataframe = pd.concat(dataframes)
     dataframe.set_index('eval_results_hash')
 
     return dataframe
+
 
 def get_linspaced_metric_names(metric: str):
     return [metric + '___' + str(i) for i in range(5, 96, 5)]

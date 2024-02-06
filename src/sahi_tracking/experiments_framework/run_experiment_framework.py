@@ -11,8 +11,9 @@ from sahi_tracking.experiments_framework.tracking_result_creation import find_or
 from sahi_tracking.experiments_framework.utils import load_config_files
 from sahi_tracking.helper.config import get_local_data_path
 
-def run_experiment_framework(tracking_dataset_dict, sahi_predictions_params_dict, tracking_experiment_dict,
-                             sahi_model_path=None, device='cpu', overwrite_existing=False, read_only=False):
+
+def run_experiment_framework(tracking_dataset_dict, detection_params_dict, tracking_experiment_dict,
+                             model_path=None, device='cpu', overwrite_existing=False, read_only=False):
     persistence_state = DataStatePersistance(read_only)
 
     dataset = find_or_create_dataset(tracking_dataset_dict,
@@ -21,8 +22,8 @@ def run_experiment_framework(tracking_dataset_dict, sahi_predictions_params_dict
                                      overwrite_existing=overwrite_existing)
 
     predictions_result = find_or_create_predictions(dataset,
-                                                    prediction_params=sahi_predictions_params_dict,
-                                                    model_path=sahi_model_path,
+                                                    prediction_params=detection_params_dict,
+                                                    model_path=model_path,
                                                     persistence_state=persistence_state,
                                                     device=device,
                                                     cocovid_img_path=get_local_data_path() / "dataset/cocovid/images",
@@ -43,21 +44,21 @@ def run_experiment_framework(tracking_dataset_dict, sahi_predictions_params_dict
 
     return evaluation_results
 
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--tracking_dataset_path", type=Path, required=True)
     parser.add_argument("--tracking_experiment_path", type=Path, required=True)
-    parser.add_argument("--sahi_predictions_params_path", type=Path, required=True)
-    parser.add_argument("--sahi_model_path", type=Path, required=True)
-    parser.add_argument("--caching",  default=True, action=argparse.BooleanOptionalAction)
-    parser.add_argument("--overwrite_existing",  default=False, action=argparse.BooleanOptionalAction)
+    parser.add_argument("--detection_params_path", type=Path, required=True)
+    parser.add_argument("--model_path", type=Path, required=False)
+    parser.add_argument("--caching", default=True, action=argparse.BooleanOptionalAction)
+    parser.add_argument("--overwrite_existing", default=False, action=argparse.BooleanOptionalAction)
     parser.add_argument("--device", type=str, required=False, default='cpu')
     args = parser.parse_args()
 
     tracking_dataset_dict, sahi_predictions_params_dict, tracking_experiment_dict = load_config_files(
-        args.tracking_dataset_path, args.tracking_experiment_path, args.sahi_predictions_params_path
+        args.tracking_dataset_path, args.tracking_experiment_path, args.detection_params_path
     )
 
     run_experiment_framework(tracking_dataset_dict, sahi_predictions_params_dict, tracking_experiment_dict,
-        args.sahi_model_path, args.device, args.overwrite_existing)
-
+                             args.model_path, args.device, args.overwrite_existing)

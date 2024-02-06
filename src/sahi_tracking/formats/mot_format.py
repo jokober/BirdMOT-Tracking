@@ -21,7 +21,8 @@ def create_mot_folder_structure(name: str, path: Path):
     return mot_path, mot_img_path, det_path, gt_path
 
 
-def mot_matrix_from_sahi_object_prediction_list(sequence_name:str, frame_pred: List[Tuple[str, ObjectPrediction]], output_path: Path):
+def mot_matrix_from_sahi_object_prediction_list(sequence_name: str, frame_pred: List[Tuple[str, ObjectPrediction]],
+                                                output_path: Path):
     mot_matrix_preds = []
     for frame_id, object_prediction_list in frame_pred:
 

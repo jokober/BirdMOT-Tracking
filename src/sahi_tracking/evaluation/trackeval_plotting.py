@@ -18,7 +18,6 @@ def plot_compare_trackers(data, cls, output_folder, plots_list=None):
     return [create_comparison_plot(data, out_loc, *args) for args in plots_list]
 
 
-
 def get_default_plots_list():
     # y_label, x_label, sort_label, bg_label, bg_function
     plots_list = [
@@ -90,10 +89,10 @@ def create_comparison_plot(data, out_loc, y_label, x_label, sort_label, bg_label
     tracker_names = tracker_names[sort_index][:num_to_plot]
     print('\nPlotting %s vs %s, for the following (ordered) trackers:' % (y_label, x_label))
     for i, name in enumerate(tracker_names):
-        print('%i: %s' % (i+1, name))
+        print('%i: %s' % (i + 1, name))
 
     # Find best fitting boundaries for data
-    boundaries = _get_boundaries(x_values, y_values, round_val=gap_val/2)
+    boundaries = _get_boundaries(x_values, y_values, round_val=gap_val / 2)
 
     fig = plt.figure(figsize=(10, 7), dpi=80)
 
@@ -175,7 +174,7 @@ bg_function_dict = {
     "geometric_mean": geometric_mean,
     "jaccard": jaccard,
     "multiplication": multiplication,
-    }
+}
 
 
 def _plot_bg_contour(bg_function, plot_boundaries, gap_val):
@@ -232,7 +231,8 @@ def _plot_pareto_optimal_lines(x_values, y_values):
     y_pareto.append(0)
     plt.plot(np.array(x_pareto), np.array(y_pareto), '--g')
 
+
 if __name__ == "__main__":
     persistence_state = DataStatePersistance()
     data = load_trackeval_evaluation_data(persistence_state.state['evaluation_results'], "pedestrian")
-    plot_compare_trackers(data, "pedestrian", output_folder = "/media/data/BirdMOT/local_data_tracking/", plots_list= None)
+    plot_compare_trackers(data, "pedestrian", output_folder="/media/data/BirdMOT/local_data_tracking/", plots_list=None)

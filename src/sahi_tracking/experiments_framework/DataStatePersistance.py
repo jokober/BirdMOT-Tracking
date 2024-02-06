@@ -8,8 +8,8 @@ from sahi_tracking.helper.config import get_local_data_path
 
 
 class DataStatePersistance:
-    def __init__(self, read_only= False):
-        self.local_data_path =  get_local_data_path()
+    def __init__(self, read_only=False):
+        self.local_data_path = get_local_data_path()
         self.state_path: Path = self.local_data_path / 'state.pkl'
         self.read_only = read_only
 
@@ -21,7 +21,6 @@ class DataStatePersistance:
             with open(self.state_path, 'wb') as handle:
                 pickle.dump(self.state, handle)
 
-
     def load_state(self):
         if self.state_path.exists():
             with open(self.state_path, 'rb') as handle:
@@ -32,7 +31,6 @@ class DataStatePersistance:
             time.sleep(30)
             self.create_new_state()
             self.write_state()
-
 
     def create_new_state(self):
         self.state = {
@@ -47,7 +45,6 @@ class DataStatePersistance:
         self.load_state()
         self.state[key] = []
         self.write_state()
-
 
     def delete_existing_by_hash(self, key, hash):
         self.load_state()
@@ -65,7 +62,6 @@ class DataStatePersistance:
             raise NotImplementedError("The type is not implemented.")
         self.write_state()
 
-
     def load_data(self, key, hash):
         self.load_state()
         return [item for item in self.state[key] if item["hash"] == hash][0]
@@ -78,7 +74,7 @@ class DataStatePersistance:
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("action", choices=['delete_all_by_key'])
-    parser.add_argument("--key" , choices=['datasets', 'tracking_results', 'predictions_results', 'evaluation_results'])
+    parser.add_argument("--key", choices=['datasets', 'tracking_results', 'predictions_results', 'evaluation_results'])
     args = parser.parse_args()
 
     if args.action == "delete_all_by_key":

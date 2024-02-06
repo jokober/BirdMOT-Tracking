@@ -28,7 +28,6 @@ class OcSortTracker:
         else:
             dets = np.empty(((0, 5)), dtype=float)
 
-
         tracked_objects = self.tracker.update(dets, (3840, 2160), (3840, 2160))
 
         if self.accumulate_results and tracked_objects.shape[0] > 0:

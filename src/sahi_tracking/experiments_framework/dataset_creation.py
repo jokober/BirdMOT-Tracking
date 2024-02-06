@@ -5,16 +5,14 @@ from pathlib import Path
 
 from deepdiff import DeepHash
 
-
+from sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
 from sahi_tracking.formats.cocovid import filter_sequences
-
 from sahi_tracking.formats.cocovid2mot import cocovid2mot
 from sahi_tracking.helper.config import get_datasets_path, get_coco_files_path
 
-from sahi_tracking.experiments_framework.DataStatePersistance import DataStatePersistance
 
-
-def find_or_create_dataset(dataset_config: dict, persistence_state: DataStatePersistance, cocovid_img_path: Path = None, overwrite_existing: bool = False):
+def find_or_create_dataset(dataset_config: dict, persistence_state: DataStatePersistance, cocovid_img_path: Path = None,
+                           overwrite_existing: bool = False):
     dataset_config = deepcopy(dataset_config)
     dataset = {
         'dataset_config': dataset_config,
@@ -48,7 +46,8 @@ def find_or_create_dataset(dataset_config: dict, persistence_state: DataStatePer
         for tracking_datasets in dataset_config['tracking_datasets']:
             if 'cocovid_path' in tracking_datasets:
                 assert cocovid_img_path is not None, "cocovid_img_path must be set if cocovid_sequence_path is used in dataset config"
-                assert tracking_datasets['cocovid_path'], f"CocoVID Sequence {tracking_datasets['cocovid_path']} does not exist"
+                assert tracking_datasets[
+                    'cocovid_path'], f"CocoVID Sequence {tracking_datasets['cocovid_path']} does not exist"
                 with open(get_coco_files_path() / tracking_datasets['cocovid_path']) as json_file:
                     cocovid_dict = json.load(json_file)
 

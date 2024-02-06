@@ -2,14 +2,13 @@ from typing import List
 
 import numpy as np
 from sahi.prediction import PredictionResult
-from trackers.ocsort_tracker.ocsort import OCSort
 
 from sahi_tracking.trackers.sort.sort import Sort
 
 
 class SORTTracker:
     def __init__(self, accumulate_results, max_age=1, min_hits=3, iou_threshold=0.3, alpha=1):
-        self.tracker = Sort( max_age=max_age, min_hits=min_hits, iou_threshold=iou_threshold, alpha=alpha)
+        self.tracker = Sort(max_age=max_age, min_hits=min_hits, iou_threshold=iou_threshold, alpha=alpha)
 
         self.accumulate_results = accumulate_results
         self.matrix_predictions = np.empty((0, 10), dtype=float)
@@ -28,7 +27,6 @@ class SORTTracker:
             dets = np.hstack((dets, scores))
         else:
             dets = np.empty(((0, 5)), dtype=float)
-
 
         tracked_objects = self.tracker.update(dets)
 

@@ -50,3 +50,8 @@ def load_data(tracking_dataset_dict, sahi_predictions_params_dict, tracking_expe
         evaluation_results_list.append(evaluation_results)
 
     return persistence_state, dataset, predictions_result, evaluation_results_list
+
+
+@st.cache_data
+def load_datafrom_state(tracking_dataset_dict, predictions_params_dict, tracking_experiment_dict):
+    pass

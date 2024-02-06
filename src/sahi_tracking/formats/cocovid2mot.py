@@ -45,14 +45,14 @@ def cocovid2mot(cocovid_dict: dict, out_dir: Path, image_path: Path):
 
             for img in images_in_vid:
                 annotations_in_img = [it for it in cocovid_dict['annotations'] if
-                                        int(it['image_id']) == img['id']]
+                                      int(it['image_id']) == img['id']]
 
                 for ann in annotations_in_img:
                     # write a row to the csv file
                     bb_xywh = ann['bbox']
 
                     print(img)
-                    gt_writer.writerow([img['frame_id']+1, ann['instance_id'],  # gt_bb.class_id,
+                    gt_writer.writerow([img['frame_id'] + 1, ann['instance_id'],  # gt_bb.class_id,
                                         bb_xywh[0],
                                         bb_xywh[1],
                                         bb_xywh[2] + bb_xywh[0],

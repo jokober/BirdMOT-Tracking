@@ -7,6 +7,7 @@ from numpy import ndarray
 from pandas import DataFrame
 from yupi import Trajectory
 
+
 def yupi_traj_from_mot(mot: Union[Path, ndarray, DataFrame]) -> Tuple[ndarray, List]:
     if isinstance(mot, Path):
         df = pd.read_csv(mot,

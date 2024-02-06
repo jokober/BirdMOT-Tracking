@@ -9,7 +9,8 @@ from sahi.predict import predict
 from sahi_tracking.formats.mot_format import mot_matrix_from_sahi_object_prediction_list
 
 
-def sahi_prediction_on_folder(source, model_path: Path, prediction_params: dict, device, out_path: Path, name:str) -> np.ndarray:
+def sahi_prediction_on_folder(source, model_path: Path, prediction_params: dict, device, out_path: Path,
+                              name: str) -> np.ndarray:
     """
     Run sahi prediction on a folder and save the results in MOT format
 
@@ -43,9 +44,10 @@ def sahi_prediction_on_folder(source, model_path: Path, prediction_params: dict,
 
     # Create MOT format
     mot_matrix_pred = mot_matrix_from_sahi_object_prediction_list(name, sahi_object_prediction_list,
-                                                output_path = out_path / f"{name}/det")
+                                                                  output_path=out_path / f"{name}/det")
 
     return mot_matrix_pred
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -60,7 +62,6 @@ if __name__ == "__main__":
     assert args.sahi_predictions_params_path, f"Prediction parameter file {args.sahi_predictions_params_path} does not exist"
     with open(args.sahi_predictions_params_path) as json_file:
         predictions_params = json.load(json_file)
-
 
     p = Path(args.source)
     for child in p.glob('**/images/'):

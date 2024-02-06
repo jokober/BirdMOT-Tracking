@@ -8,6 +8,7 @@ from sahi_tracking.trackers.iou_tracker.util import iou
 from sahi_tracking.trackers.iou_tracker.viou_tracker import associate
 from sahi_tracking.trackers.iou_tracker.vis_tracker import VisTracker
 
+
 class VIoUTracker:
     def __init__(self, img_path, sigma_l=0.3, sigma_h=0.7, sigma_iou=0.3, t_min=3, ttl=10, tracker_type="KCF",
                  keep_upper_height_ratio=0.0):
@@ -38,7 +39,7 @@ class VIoUTracker:
     def update_online(self, object_prediction_list: List[PredictionResult]):
         self.frame_number += 1
 
-        detections_frame =  [{
+        detections_frame = [{
             'score': pred_res.score.value,
             'bbox': [round(v) for v in pred_res.bbox.to_xyxy()],
             'class': pred_res.category.id
@@ -59,7 +60,8 @@ class VIoUTracker:
         updated_tracks = []
         for track_id, det_id in zip(track_ids, det_ids):
             self.tracks_active[track_id]['bboxes'].append(dets[det_id]['bbox'])
-            self.tracks_active[track_id]['max_score'] = max(self.tracks_active[track_id]['max_score'], dets[det_id]['score'])
+            self.tracks_active[track_id]['max_score'] = max(self.tracks_active[track_id]['max_score'],
+                                                            dets[det_id]['score'])
             self.tracks_active[track_id]['classes'].append(dets[det_id]['class'])
             self.tracks_active[track_id]['det_counter'] += 1
 
@@ -156,8 +158,9 @@ class VIoUTracker:
                 dets_for_new.append(det)
 
         # create new tracks
-        new_tracks = [{'bboxes': [det['bbox']], 'max_score': det['score'], 'start_frame': self.frame_number, 'ttl': self.ttl,
-                       'classes': [det['class']], 'det_counter': 1, 'visual_tracker': None} for det in dets_for_new]
+        new_tracks = [
+            {'bboxes': [det['bbox']], 'max_score': det['score'], 'start_frame': self.frame_number, 'ttl': self.ttl,
+             'classes': [det['class']], 'det_counter': 1, 'visual_tracker': None} for det in dets_for_new]
         self.tracks_active = []
         for track in updated_tracks + new_tracks:
             if track['ttl'] == 0:
@@ -170,8 +173,8 @@ class VIoUTracker:
     def collect_results(self):
         # finish all remaining active and extendable tracks
         self.tracks_finished = self.tracks_finished + \
-                          [track for track in self.tracks_active + self.tracks_extendable
-                           if track['max_score'] >= self.sigma_h and track['det_counter'] >= self.t_min]
+                               [track for track in self.tracks_active + self.tracks_extendable
+                                if track['max_score'] >= self.sigma_h and track['det_counter'] >= self.t_min]
 
         # remove last visually tracked frames and compute the track classes
         for track in self.tracks_finished:
@@ -187,11 +190,11 @@ class VIoUTracker:
                 new_row = [
                     track['start_frame'] + i,
                     id_,
-                    bbox[0]+1,
-                    bbox[1]+1,
+                    bbox[0] + 1,
+                    bbox[1] + 1,
                     bbox[2],
                     bbox[3],
-                    -1, #track['max_score']
+                    -1,  # track['max_score']
                     -1,
                     -1,
                     -1,

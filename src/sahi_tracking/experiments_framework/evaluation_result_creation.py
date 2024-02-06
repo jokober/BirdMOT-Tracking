@@ -11,7 +11,6 @@ from sahi_tracking.helper.config import get_predictions_path, get_tracking_resul
 from sahi_tracking.trackers.norfair_tracker import NorfairTracker
 
 
-
 def find_or_create_tracker_evaluations(tracking_results: dict, predictions_result: dict, dataset: dict,
                                        persistence_state: DataStatePersistance, overwrite_existing: bool = False):
     predictions_result = deepcopy(predictions_result)
@@ -53,11 +52,12 @@ def find_or_create_tracker_evaluations(tracking_results: dict, predictions_resul
             SEQMAP_FILE=dataset['dataset']['seq_map'],
             BENCHMARK=dataset['dataset_config']['benchmark_name'],
             SPLIT_TO_EVAL="all"
-            )
+        )
 
         evaluation_results['path'] = evaluation_results_path
         evaluation_results['hash'] = evaluation_results_hash
-        evaluation_results['evaluation_results_summary'] = load_trackeval_evaluation_data([evaluation_results], "pedestrian")[evaluation_results_hash]
+        evaluation_results['evaluation_results_summary'] = \
+        load_trackeval_evaluation_data([evaluation_results], "pedestrian")[evaluation_results_hash]
         persistence_state.update_state('append', 'evaluation_results', evaluation_results)
     else:
         evaluation_results = persistence_state.load_data('evaluation_results', evaluation_results_hash)
